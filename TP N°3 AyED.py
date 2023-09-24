@@ -46,14 +46,16 @@ def formatearUsuario (rUsu):
     rUsu.tipoUsuario = str(rUsu.tipoUsuario)
     rUsu.tipoUsuario = rUsu.tipoUsuario.ljust(20, ' ')
 #------------------------------------------------------------------------------------------------------------------------------------------#
-def Buscasec(mail):
+def buscaSec(mail):
     global afUsuarios, alUsuarios
     t = os.path.getsize(afUsuarios)
     alUsuarios.seek(0)  
     while alUsuarios.tell()<t:
         pos = alUsuarios.tell()
         vrTemp = pickle.load(alUsuarios)
-        if vrTemp.nombreUsuario == mail:
+        vrTempsinesp = vrTemp.nombreUsuario #Esto lo hago porque debido al formateo uno tiene espacios y el otro no, entonces para que la comparacion funcione, le saco los espacios
+        vrTempor = vrTempsinesp.strip()
+        if (vrTempor) == mail:
             return pos
     return -1
 #------------------------------------------------------------------------------------------------------------------------------------------#
@@ -66,11 +68,11 @@ def crearUsuarios():
     
     mail = str(input("Ingrese su correo electrónico para su nombre de usuario <máx. 100 caracteres>. "))
  
-    while len(mail)< 0 and len(mail) > 100:
+    while len(mail)< 1 and len(mail) > 100:
         mail = input("Incorrecto! su correo electrónico debe tener hasta 100 caracteres. ")
         
     regUsu = usuarios()
-    if Buscasec(mail) == -1:
+    if buscaSec(mail) == -1:
         regUsu.nombreUsuario = mail
         contra = pwinput.pwinput("Ingrese una contraseña. Debe tener exactamente 8 caracteres ")
         while len(contra) != 8:
@@ -82,7 +84,7 @@ def crearUsuarios():
         pickle.dump(regUsu, alUsuarios)
         alUsuarios.flush()    
     else:
-        print("ta existe") 
+        print("El usuario ya existe.") 
              
 def codUser():
     
@@ -97,7 +99,10 @@ def codUser():
 
 #------------------------------------------------------------------------------------------------------------------------------------------#
 def ingresoUsuarios():
-    print("g")
+    alUsuarios.seek(0) # me posiciono en el primer registro
+    aux = pickle.load(alUsuarios) # lo traigo a memoria
+    tamReg = alUsuarios.tell() # obtengo el peso en bytes del registro(todos pesan lo mismo)
+    print(tamReg, aux.nombreUsuario)
 #------------------------------------------------------------------------------------------------------------------------------------------#
 def validaRangoEnteros(nro, desde, hasta):
 	try:              
@@ -130,6 +135,7 @@ else:
     rUsu.claveUsuario = "12345"
     rUsu.tipoUsuario = "administrador"
     formatearUsuario(rUsu) # es para que todos los registros tengan las mismas longitudes en todos los campos, por tanto todos tendran el mismo peso
+    pickle.dump(rUsu, alUsuarios)
     alUsuarios.flush()
 
 opc = -1

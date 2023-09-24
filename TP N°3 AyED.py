@@ -1,6 +1,5 @@
 #TP N°3 ALgoritmos y estructuras de datos
 # Fausto Bustos, Santiago Gerez, Fernando Pelmailrini y Lara Varrenti
-
 import os
 from types import NoneType                        #realiza operaciones en el SO correspondiente
 from pwinput import pwinput                   #censura la contraseña
@@ -10,6 +9,9 @@ import io                        #permite acceder a archivos de forma directa
 from datetime import datetime    #permite manejar variables tipo fecha y hora
 from datetime import date        #permite manejar variables tipo fecha
 from colorama import Fore, init  #para poner colores | EJ: print(Fore.GREEN + "holis")
+import time
+import pwinput
+
 init(autoreset=True)             #inicializamos los colores
 
 #ARCHIVOS:
@@ -30,40 +32,11 @@ init(autoreset=True)             #inicializamos los colores
 global afUsuarios, alUsuarios
 
 class usuarios:
-        def __init__(self):
-            self.codUsuario = 0
-            self.nombreUsuario = ""
-            self.claveUsuario = ""
-            self.tipoUsuario = ""
-class locales:
     def __init__(self):
-        self.nombreLocal = 0
-        self.ubicLocal = ""
-        self.rubroLocal = ""
         self.codUsuario = 0
-        self.estado = ""
-class promociones:
-    def __init__(self):
-        self.codPromo = 0
-        self.textoPromo = ""
-        self.fechaDesdePromo = None 
-        self.fechaHastaPromo = None
-        self.diasSemana = [0]*6
-        self.estado = ""
-        self.codLocal = 0
-class uso_promociones:
-    def __init__(self):
-        self.codCliente = 0
-        self.codPromo = 0
-        self.fechaUsoPromo = None
-class novedades:
-    def __init__(self):
-        self.codNovedades = 0
-        self.textoNovedades = ""
-        self.fechaDesdeNovedades = None
-        self.fechaHastaNovedades = None
+        self.nombreUsuario = ""
+        self.claveUsuario = ""
         self.tipoUsuario = ""
-        self.estado = ""
 
 def formatearUsuario (rUsu):
     rUsu.nombreUsuario = str(rUsu.nombreUsuario)
@@ -73,67 +46,58 @@ def formatearUsuario (rUsu):
     rUsu.tipoUsuario = str(rUsu.tipoUsuario)
     rUsu.tipoUsuario = rUsu.tipoUsuario.ljust(20, ' ')
 #------------------------------------------------------------------------------------------------------------------------------------------#
-def Buscasec(mail, regUsu):
+def Buscasec(mail):
     global afUsuarios, alUsuarios
     t = os.path.getsize(afUsuarios)
-    pos = 0
-    alUsuarios.seek(0, 0)  
-    if t>0:
-        regUsu = pickle.load(alUsuarios)
-        while (alUsuarios.tell() < t) and (mail != regUsu.nombreUsuario):
-            pos = alUsuarios.tell()
-            regUsu = pickle.load(alUsuarios)
-        if regUsu.nombreUsuario == mail:        
-         return pos
-        else:
-         return -1
-    else:
-        print('-----------------')
-        print("Archivo sin datos")
-        print('-----------------')
-        return -1
+    alUsuarios.seek(0)  
+    while alUsuarios.tell()<t:
+        pos = alUsuarios.tell()
+        vrTemp = pickle.load(alUsuarios)
+        if vrTemp.nombreUsuario == mail:
+            return pos
+    return -1
 #------------------------------------------------------------------------------------------------------------------------------------------#
 def crearUsuarios():
     global alUsuarios, afUsuarios
-    os.system("cls")
     print("-----------------------------------------")
     print("|              REGISTRACIÓN             |")
     print("-----------------------------------------")
-    regUsu = usuarios()
-    mail = input("Ingrese su correo electrónico para su nombre de usuario <máx. 100 caracteres>. ")
-    while len(mail)< 1 and len(mail) > 100:
+    
+    
+    mail = str(input("Ingrese su correo electrónico para su nombre de usuario <máx. 100 caracteres>. "))
+ 
+    while len(mail)< 0 and len(mail) > 100:
         mail = input("Incorrecto! su correo electrónico debe tener hasta 100 caracteres. ")
-    while Buscasec(mail, regUsu) == -1:
-        print("\nCorreo ya registrado. Intente nuevamente:")
-        mail = input()
-        while len(mail)< 1 and len(mail) > 100:
-            mail = input("Incorrecto! su correo electrónico debe tener hasta 100 caracteres. ")
-    regUsu.nombreUsuario = mail
+        
+    regUsu = usuarios()
+    if Buscasec(mail) == -1:
+        regUsu.nombreUsuario = mail
+        contra = pwinput.pwinput("Ingrese una contraseña. Debe tener exactamente 8 caracteres ")
+        while len(contra) != 8:
+            contra = pwinput.pwinput(("Incorrecto! su contraseña debe tener 8 caracteres. "))
+        regUsu.claveUsuario = contra
+        regUsu.codUsuario = codUser() + 1
+        regUsu.tipoUsuario = "cliente"
+        formatearUsuario(regUsu)# es para que todos los registros tengan las mismas longitudes en todos los campos, por tanto todos tendran el mismo peso
+        pickle.dump(regUsu, alUsuarios)
+        alUsuarios.flush()    
+    else:
+        print("ta existe") 
+             
+def codUser():
     
-    os.system("cls")
-    contra = input("Ingrese una contraseña. Debe tener 8 caracteres")
-    while len(contra) != 8:
-        contra = input("Incorrecto! su contraseña debe tener 8 caracteres. ")
-    regUsu.claveUsuario = contra
+    alUsuarios.seek(0) # me posiciono en el primer registro
+    aux = pickle.load(alUsuarios) # lo traigo a memoria
+    tamReg = alUsuarios.tell() # obtengo el peso en bytes del registro(todos pesan lo mismo)
     
-    # regUsu.codUsuario =   tiene que ser consecutivo
-    regUsu.tipoUsuario = "cliente"
-    formatearUsuario(regUsu) 
-    pickle.dump(regUsu, alUsuarios)
-    alUsuarios.flush()
-    os.system("cls")
-    print("~~~~~~~~~~~~~~~~~~~~~~~")
-    print(" Registración exitosa")
-    print("~~~~~~~~~~~~~~~~~~~~~~~")
+    alUsuarios.seek(-tamReg, 2) # me posiciono en el final, y me muevo hacia atras un registro(tamreg)
+    aux = pickle.load(alUsuarios)# traigo a memoria el ultimo registro cargado
+    cod = aux.codUsuario # obtengo el codigo del ultimo registro cargado
+    return int(cod) # lo devuelvo para luego ir aumentando uno en uno cada vez que se cree uno nuevo
 
-    
 #------------------------------------------------------------------------------------------------------------------------------------------#
 def ingresoUsuarios():
-    os.system("cls")
-    print("-----------------------------------------")
-    print("|           INICIO DE SESIÓN            |")
-    print("-----------------------------------------")
-    os.system("pause")
+    print("g")
 #------------------------------------------------------------------------------------------------------------------------------------------#
 def validaRangoEnteros(nro, desde, hasta):
 	try:              
@@ -146,24 +110,26 @@ def validaRangoEnteros(nro, desde, hasta):
 		return True 
 #------------------------------------------------------------------------------------------------------------------------------------------#
 def mostrarMenu():
-    os.system("cls")
     print(Fore.GREEN + "-----------------------------------------")
     print(Fore.GREEN + "|            MENU PRINCIPAL             |")
     print(Fore.GREEN + "-----------------------------------------")
     print("1. Ingresar con usuario registrado\n2. Registrarse como cliente \n3. Salir ")
+    print
+
 #---------------Programa principal---------------------------------------------------------------------------------------------------------#
 afUsuarios = "C:\\ayed\\usuarios.dat" 
+
 if os.path.exists(afUsuarios):
-     alUsuarios = open(afUsuarios,"r+b") #el archivo ya existe, el puntero va al inicio.
+    alUsuarios = open(afUsuarios,"r+b") #el archivo ya existe, el puntero va al inicio.
 else:
     alUsuarios = open(afUsuarios,"w+b") #el archivo no existe, lo crea.
+    #precarga el primer usuario que debe aparecer una vez se inicie el archivo por primera vez
     rUsu = usuarios()
     rUsu.codUsuario = 1
     rUsu.nombreUsuario = "admin@shopping.com"
     rUsu.claveUsuario = "12345"
     rUsu.tipoUsuario = "administrador"
-    formatearUsuario(rUsu) 
-    pickle.dump(rUsu, alUsuarios)
+    formatearUsuario(rUsu) # es para que todos los registros tengan las mismas longitudes en todos los campos, por tanto todos tendran el mismo peso
     alUsuarios.flush()
 
 opc = -1

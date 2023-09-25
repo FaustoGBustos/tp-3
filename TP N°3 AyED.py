@@ -1,5 +1,5 @@
 #TP N°3 ALgoritmos y estructuras de datos
-# Fausto Bustos, Santiago Gerez, Fernando Pelmailrini y Lara Varrenti
+# Fausto Bustos, Santiago Gerez, Fernando Pellegrini y Lara Varrenti
 import os
 from types import NoneType                        #realiza operaciones en el SO correspondiente
 from pwinput import pwinput                   #censura la contraseña
@@ -30,18 +30,16 @@ init(autoreset=True)             #inicializamos los colores
 #   -
 #------------------------------------------------------------------------------------------------------------------------------------------#
 global afUsuarios, alUsuarios
-
 class usuarios:
     def __init__(self):
         self.codUsuario = 0
         self.nombreUsuario = ""
         self.claveUsuario = ""
         self.tipoUsuario = ""
-
 class locales:
     def __init__(self):
         self.nombreLocal = 0
-        self.ubicLocal = ""
+        self.ubiLocal = ""
         self.rubroLocal = ""
         self.codUsuario = 0
         self.estado = ""
@@ -75,6 +73,16 @@ def formatearUsuario (rUsu):
     rUsu.claveUsuario = rUsu.claveUsuario.ljust(8, ' ')
     rUsu.tipoUsuario = str(rUsu.tipoUsuario)
     rUsu.tipoUsuario = rUsu.tipoUsuario.ljust(20, ' ')
+    #faltaria formatear el codigo de usuario, no?
+
+def formatearLocales(rLoc):
+    rLoc.nombreLocal = str(rLoc.nombreLocal)
+    rLoc.nombreLocal = rLoc.nombreLocal.ljust(50, ' ') 
+    rLoc.ubiLocal = str(rLoc.ubiLocal)
+    rLoc.ubiLocal = rLoc.ubiLocal.ljust(50, ' ')
+    rLoc.rubroLocal = str(rLoc.rubroLocal)
+    rLoc.rubroLocal = rLoc.rubroLocal.ljust(50, ' ')
+    #faltaria formatear codigo del local y codigo del usuario
 #------------------------------------------------------------------------------------------------------------------------------------------#
 def buscaSec(mail):
     global afUsuarios, alUsuarios
@@ -129,8 +137,8 @@ def codUser():
 
 #------------------------------------------------------------------------------------------------------------------------------------------#
 def ingresoUsuarios(): # recordar INACTIVOS
-    mail = str(input("ingrese su nombre de usuario"))
-    contra = pwinput.pwinput("Ingrese una contraseña. Recuerde que son exactamente 8 caracteres ")
+    mail = str(input("ingrese su nombre de usuario: "))
+    contra = pwinput.pwinput("Ingrese una contraseña. Recuerde que son exactamente 8 caracteres: ")
 
     # si es -1, quiere decir que el usuario no existe, si es otro numero, muestra la posicion del registro q lo contiene
     pos = buscaSec(mail)
@@ -250,15 +258,171 @@ def menuCliente():
     """
     print(menu_cliente)
 
+def ordenamiento():
+    global afLocales, alLocales
+    alLocales.seek(0)
+    aux = pickle.load(alLocales)
+    tamReg = alLocales.tell()
+    tamArch = os.path.getsize(afLocales)
+    cantReg = tamArch // tamReg
+    for i in range(0 , cantReg-1):
+        for j in range(i+1, cantReg):
+            alLocales.seek(i*tamReg, 0)
+            auxi = pickle.load(alLocales)
+            alLocales.seek(j*tamReg,0)
+            auxj = pickle.load(alLocales)
+            if auxi.nombreLocal > auxj.nombreLocal:
+                alLocales.seek(i*tamReg,0)
+                pickle.dump (auxj, alLocales)
+                alLocales. seek (j*tamReg, 0)
+                pickle.dump(auxi,alLocales)
+
+def busquedaDicotomica(a):
+    global afLocales, alLocales
+
+    alLocales.seek(0)
+    aux = pickle.load(alLocales)
+
+    tamReg = alLocales.tell()
+    tamArch = os.path.getsize(afLocales)
+    cantReg = tamArch // tamReg
+
+    desde = 0
+    hasta = cantReg - 1
+    medio = (desde + hasta)//2
+
+    alLocales.seek(medio*tamReg, 0)#2
+
+    #sin espacios para comparar bien
+    vrLoc = pickle.load(alLocales)
+    nombre1 = vrLoc.nombreLocal
+    nombre1SE = nombre1.strip()
+
+    while nombre1SE != a and desde < hasta:
+
+        if a < nombre1SE:
+            hasta = medio - 1
+        else:
+            desde = medio + 1
+
+        medio = (desde + hasta)//2
+
+        alLocales.seek(medio*tamReg, 0)#33
+
+    # SE = Sin Espacios
+        vrLoc = pickle.load(alLocales)
+        nombre = vrLoc.nombreLocal
+        nombreSE = nombre.strip()
+
+    if nombre1SE == a:#falta pasarlo a sin espacios para comparar bien
+        return medio*tamReg
+    else:
+        return -1
+
+#-----------------ADMINISTRADOR-----------------------------------------------------------------------------------------------------------#
+def administrador():
+    opc = -1
+    while opc != 0:
+        opc = input("Ingrese una opción [1-5]: ")
+        while validaRangoEnteros(opc, 1, 5):
+            opc = input(Fore.RED + "Incorrecto - Ingrese una opción [1-5]: " + Fore.RESET)
+        opc = int(opc)
+        if opc == 1:
+            while opc != 0:
+                menuGestionDeLocales()
+                opc = input("Ingrese una opción [1-5]: ")
+                while validaRangoEnteros(opc, 1, 5):
+                    opc = input(Fore.RED + "Incorrecto - Ingrese una opción [1-5]: " + Fore.RESET)
+                opc = int(opc)
+                if opc == 1:
+                    print("crear locales")
+                    creacionDeLocales()
+                    # mostrartodos
+                elif opc == 2:
+                    print("modificar local")
+                elif opc == 3:
+                    print("eliminar local")
+                elif opc == 4:
+                    print("Mapa locales")
+                elif opc == 5:
+                    print("volver")
+        elif opc == 2:
+            print("crear cuentas de dueños de locales")
+        elif opc == 3:
+            print("3")
+        elif opc == 4:
+            print("4")
+        elif opc == 5:
+            print("5")
+        elif opc == 0:
+            print("salir")
+
 def creacionDeLocales():
-    print("hola")
+    global alLocales, afLocales
+    print("-----------------------------------------")
+    print("|        CREACION LOCALES               |")
+    print("-----------------------------------------")
+
+    nombreLocal = str(input("Ingrese el nombre del local <máx. 50 caracteres>. "))
+    while len(nombreLocal)< 1 and len(nombreLocal) > 50:
+        nombreLocal = input("Incorrecto! su correo electrónico debe tener hasta 50 caracteres. ")
+
+    while nombreLocal != "0":
+
+        t = os.path.getsize(afLocales)
+    
+
+        if t > 0:# si el archivo no cuenta con ningun registro, no hace el ordenamiento
+            ordenamiento()
+            busquedaDicotomica(nombreLocal) # realiza la busqueda dicotomica para ver si existe o no
+        
+            while busquedaDicotomica(nombreLocal) != -1:
+                nombreLocal = input("Incorrecto! el nombre del Local ya existe. Intente nuevamente ")
+                if nombreLocal == "0":
+                    return "saliendo.." #faltaria el listado
+                busquedaDicotomica(nombreLocal)
+
+        codUsuario = str(input("Ingrese su codigo de usuario"))
+
+        #verificar mediante una busqueda si el codigo del usuario corresponde a un dueño de local
+
+        while len(codUsuario)< 1 and len(codUsuario) > 50:
+            codUsuario = input("Incorrecto! su codigo de usuario no corresponde con un dueño de local ")
+
+        ubiLocal = str(input("Ingrese la ubi del local <máx. 50 caracteres>. "))
+
+        while len(ubiLocal)< 1 and len(ubiLocal) > 50:
+            ubiLocal = input("Incorrecto! su ubicacion debe tener hasta 50 caracteres. ")
+
+        rubroLocal = str(input("Ingrese el rubro del local <indumentaria, perfumeria o comida>:  "))
+
+        while len(rubroLocal)< 1 and len(rubroLocal) > 50:
+            rubroLocal = input("Incorrecto! su correo electrónico debe tener hasta 50 caracteres:  ")
+
+        #agregar el codigo de local igual que hicimos con dueño de locales
+        regLoc = locales()
+        regLoc.nombreLocal = nombreLocal
+        regLoc.ubicLocal = ubiLocal
+        regLoc.rubroLocal = rubroLocal
+        regLoc.codUsuario = codUsuario
+        formatearLocales(regLoc)
+        pickle.dump(regLoc, alLocales)
+        alLocales.flush()
+        #puedo hacer un while mas grande y hacer un return con la lista de todos
+        nombreLocal = str(input("Ingrese el nombre del local <máx. 50 caracteres>. "))
+
+    return 1 #faltaria el listado
+
 #---------------Programa principal---------------------------------------------------------------------------------------------------------#
 afUsuarios = "C:\\ayed\\usuarios.dat" 
+afLocales = "C:\\ayed\\locales.dat"
 
 if os.path.exists(afUsuarios):
     alUsuarios = open(afUsuarios,"r+b") #el archivo ya existe, el puntero va al inicio.
+    alLocales = open(afLocales,"r+b") #el archivo ya existe, el puntero va al inicio.
 else:
     alUsuarios = open(afUsuarios,"w+b") #el archivo no existe, lo crea.
+    alLocales = open(afLocales,"w+b") #el archivo no existe, lo crea.
     #precarga el primer usuario que debe aparecer una vez se inicie el archivo por primera vez
     rUsu = usuarios()
     rUsu.codUsuario = 1
@@ -281,32 +445,7 @@ while opc != 3:
         tipoUseraSE = tipoUser.strip()#poner sin espacios
         if tipoUseraSE == "administrador":
             menuAdministrador()
-            opc = -1
-            while opc != 0:
-                opc = input("Ingrese una opción [1-5]: ")
-                while validaRangoEnteros(opc, 1, 5):
-                    opc = input(Fore.RED + "Incorrecto - Ingrese una opción [1-5]: " + Fore.RESET)
-                opc = int(opc)
-                if opc == 1:
-                    menuGestionDeLocales()
-                    while opc != 0:
-                        opc = input("Ingrese una opción [1-5]: ")
-                        while validaRangoEnteros(opc, 1, 5):
-                            opc = input(Fore.RED + "Incorrecto - Ingrese una opción [1-5]: " + Fore.RESET)
-                        opc = int(opc)
-                        if opc == 1:
-                            print("crear locales")
-                            creacionDeLocales()
-                        elif opc == 2:
-                            print("modificar local")
-                        elif opc == 3:
-                            print("eliminar local")
-                        elif opc == 4:
-                            print("Mapa locales")
-                        elif opc == 5:
-                            print("volver")
-                elif opc == 2:
-                    print("crear cuentas de dueños de locales")
+            administrador()
         elif tipoUseraSE == "cliente":
             menuCliente()
         elif tipoUseraSE == "dueñoDeLocal":
@@ -316,3 +455,4 @@ while opc != 3:
     elif opc == 3:
         print("\n\nGracias por visitarnos ...\n\n")
 alUsuarios.close()
+alLocales.close()

@@ -38,6 +38,36 @@ class usuarios:
         self.claveUsuario = ""
         self.tipoUsuario = ""
 
+class locales:
+    def __init__(self):
+        self.nombreLocal = 0
+        self.ubicLocal = ""
+        self.rubroLocal = ""
+        self.codUsuario = 0
+        self.estado = ""
+class promociones:
+    def __init__(self):
+        self.codPromo = 0
+        self.textoPromo = ""
+        self.fechaDesdePromo = None 
+        self.fechaHastaPromo = None
+        self.diasSemana = [0]*6
+        self.estado = ""
+        self.codLocal = 0
+class uso_promociones:
+    def __init__(self):
+        self.codCliente = 0
+        self.codPromo = 0
+        self.fechaUsoPromo = None
+class novedades:
+    def __init__(self):
+        self.codNovedades = 0
+        self.textoNovedades = ""
+        self.fechaDesdeNovedades = None
+        self.fechaHastaNovedades = None
+        self.tipoUsuario = ""
+        self.estado = ""
+
 def formatearUsuario (rUsu):
     rUsu.nombreUsuario = str(rUsu.nombreUsuario)
     rUsu.nombreUsuario = rUsu.nombreUsuario.ljust(100, ' ') 
@@ -102,14 +132,19 @@ def ingresoUsuarios(): # recordar INACTIVOS
     mail = str(input("ingrese su nombre de usuario"))
     contra = pwinput.pwinput("Ingrese una contraseña. Recuerde que son exactamente 8 caracteres ")
 
+    # si es -1, quiere decir que el usuario no existe, si es otro numero, muestra la posicion del registro q lo contiene
     pos = buscaSec(mail)
 
+    #nos posicionamos ahi
     alUsuarios.seek(pos, 0)
+    #traemos a memoria el registro
     aux = pickle.load(alUsuarios)
     
+    #de ese registro obtenemos la clave, y le sacamos los espacios para luego ver si coinciden con el usuario
     clave = aux.claveUsuario
     claveSinEspacios = clave.strip()
 
+    # max 3 intentos
     error = 0
     while ((pos == -1) or (claveSinEspacios != contra)) and error != 2:
         print("El usuario y la contraseña no concide. Recuerden que son 3 intentos como maximo")
@@ -119,14 +154,11 @@ def ingresoUsuarios(): # recordar INACTIVOS
         error += 1
         if error == 2:
             return "intentos maximos alcanzados"
-    
+        
+    # devuelve que tipo de usuario es para devolverle el menu correspondiente
     return aux.tipoUsuario 
 
     #traer el registro y buscar la contraseña, con la pos accedemos a la ubicacion del registro
-
-         
-    
-
 
 #------------------------------------------------------------------------------------------------------------------------------------------#
 def validaRangoEnteros(nro, desde, hasta):
@@ -144,8 +176,82 @@ def mostrarMenu():
     print(Fore.GREEN + "|            MENU PRINCIPAL             |")
     print(Fore.GREEN + "-----------------------------------------")
     print("1. Ingresar con usuario registrado\n2. Registrarse como cliente \n3. Salir ")
-    print
 
+def menuAdministrador():
+    menu_administrador = """
+    *******************************************
+    *            MENU ADMINISTRADOR            *
+    *******************************************
+    1. Gestión de locales
+    2. Crear cuentas de dueños de locales
+    3. Aprobar / Denegar solicitud de descuento
+    4. Gestión de Novedades
+    5. Reporte de utilización de descuentos
+    0. Salir
+    *******************************************
+    """
+    print(menu_administrador)
+
+def menuGestionDeLocales():
+    menu_gestion_locales = """
+    *******************************************
+    *         GESTIÓN DE LOCALES               *
+    *******************************************
+    1. Gestión de Locales
+    a) Crear locales
+    b) Modificar local
+    c) Eliminar local
+    d) Mapa de locales
+    e) Volver
+    *******************************************
+    """
+
+    print(menu_gestion_locales)
+
+def menuGestionDeNovedades():
+    menu_gestion_novedades = """
+    *******************************************
+    *        GESTIÓN DE NOVEDADES (Chapin)     *
+    *******************************************
+    4. Gestión de novedades (solo chapin)
+    a) Crear novedades
+    b) Modificar novedad
+    c) Eliminar novedad
+    d) Volver
+    *******************************************
+    """
+
+    print(menu_gestion_novedades)
+   
+def menuDuenoDeLocal():
+    menu_dueno_de_local = """
+    *******************************************
+    *           MENU DUEÑO DE LOCAL           *
+    *******************************************
+    1. Crear descuento
+    2. Reporte de uso de descuentos
+    3. Ver novedades (solo chapin)
+    0. Salir
+    *******************************************
+    """
+
+    print(menu_dueno_de_local)
+
+def menuCliente():
+    menu_cliente = """
+    *******************************************
+    *               MENU CLIENTE               *
+    *******************************************
+    1. Buscar descuentos en local
+    2. Solicitar descuento
+    3. Ver novedades (solo chapin)
+    0. Salir
+    *******************************************
+    """
+    print(menu_cliente)
+
+def creacionDeLocales():
+    print("hola")
 #---------------Programa principal---------------------------------------------------------------------------------------------------------#
 afUsuarios = "C:\\ayed\\usuarios.dat" 
 
@@ -171,13 +277,40 @@ while opc != 3:
         opc = input(Fore.RED + "Incorrecto - Ingrese una opción [1-3]: " + Fore.RESET)
     opc = int(opc)
     if opc == 1:
-        tipoUser = ingresoUsuarios()#poner sin espacios
-        if tipoUser == "cliente":
-            print("menu")
-        elif tipoUser == "administrador":
-            print("menu ad")
-        elif tipoUser == "dueñoDeLocal":
-            print("dueñolocal")
+        tipoUser = ingresoUsuarios()
+        tipoUseraSE = tipoUser.strip()#poner sin espacios
+        if tipoUseraSE == "administrador":
+            menuAdministrador()
+            opc = -1
+            while opc != 0:
+                opc = input("Ingrese una opción [1-5]: ")
+                while validaRangoEnteros(opc, 1, 5):
+                    opc = input(Fore.RED + "Incorrecto - Ingrese una opción [1-5]: " + Fore.RESET)
+                opc = int(opc)
+                if opc == 1:
+                    menuGestionDeLocales()
+                    while opc != 0:
+                        opc = input("Ingrese una opción [1-5]: ")
+                        while validaRangoEnteros(opc, 1, 5):
+                            opc = input(Fore.RED + "Incorrecto - Ingrese una opción [1-5]: " + Fore.RESET)
+                        opc = int(opc)
+                        if opc == 1:
+                            print("crear locales")
+                            creacionDeLocales()
+                        elif opc == 2:
+                            print("modificar local")
+                        elif opc == 3:
+                            print("eliminar local")
+                        elif opc == 4:
+                            print("Mapa locales")
+                        elif opc == 5:
+                            print("volver")
+                elif opc == 2:
+                    print("crear cuentas de dueños de locales")
+        elif tipoUseraSE == "cliente":
+            menuCliente()
+        elif tipoUseraSE == "dueñoDeLocal":
+            menuDuenoDeLocal()
     elif opc == 2:
         crearUsuarios()
     elif opc == 3:

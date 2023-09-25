@@ -98,11 +98,36 @@ def codUser():
     return int(cod) # lo devuelvo para luego ir aumentando uno en uno cada vez que se cree uno nuevo
 
 #------------------------------------------------------------------------------------------------------------------------------------------#
-def ingresoUsuarios():
-    alUsuarios.seek(0) # me posiciono en el primer registro
-    aux = pickle.load(alUsuarios) # lo traigo a memoria
-    tamReg = alUsuarios.tell() # obtengo el peso en bytes del registro(todos pesan lo mismo)
-    print(tamReg, aux.nombreUsuario)
+def ingresoUsuarios(): # recordar INACTIVOS
+    mail = str(input("ingrese su nombre de usuario"))
+    contra = pwinput.pwinput("Ingrese una contraseña. Recuerde que son exactamente 8 caracteres ")
+
+    pos = buscaSec(mail)
+
+    alUsuarios.seek(pos, 0)
+    aux = pickle.load(alUsuarios)
+    
+    clave = aux.claveUsuario
+    claveSinEspacios = clave.strip()
+
+    error = 0
+    while ((pos == -1) or (claveSinEspacios != contra)) and error != 2:
+        print("El usuario y la contraseña no concide. Recuerden que son 3 intentos como maximo")
+        mail = str(input("ingrese su nombre de usuario"))
+        contra = pwinput.pwinput("Ingrese una contraseña correcta.")
+        pos = buscaSec(mail)
+        error += 1
+        if error == 2:
+            return "intentos maximos alcanzados"
+    
+    return aux.tipoUsuario 
+
+    #traer el registro y buscar la contraseña, con la pos accedemos a la ubicacion del registro
+
+         
+    
+
+
 #------------------------------------------------------------------------------------------------------------------------------------------#
 def validaRangoEnteros(nro, desde, hasta):
 	try:              
@@ -140,15 +165,21 @@ else:
 
 opc = -1
 while opc != 3:
-	mostrarMenu()
-	opc = input("Ingrese una opción [1-3]: ")
-	while validaRangoEnteros(opc, 1, 3):
-		opc = input(Fore.RED + "Incorrecto - Ingrese una opción [1-3]: " + Fore.RESET)
-	opc = int(opc)
-	if opc == 1:
-		ingresoUsuarios()
-	elif opc == 2:
-		crearUsuarios()
-	elif opc == 3:
-		print("\n\nGracias por visitarnos ...\n\n")
-alUsuarios.close() 
+    mostrarMenu()
+    opc = input("Ingrese una opción [1-3]: ")
+    while validaRangoEnteros(opc, 1, 3):
+        opc = input(Fore.RED + "Incorrecto - Ingrese una opción [1-3]: " + Fore.RESET)
+    opc = int(opc)
+    if opc == 1:
+        tipoUser = ingresoUsuarios()#poner sin espacios
+        if tipoUser == "cliente":
+            print("menu")
+        elif tipoUser == "administrador":
+            print("menu ad")
+        elif tipoUser == "dueñoDeLocal":
+            print("dueñolocal")
+    elif opc == 2:
+        crearUsuarios()
+    elif opc == 3:
+        print("\n\nGracias por visitarnos ...\n\n")
+alUsuarios.close()

@@ -74,9 +74,8 @@ def formatearUsuario (rUsu):
     rUsu.claveUsuario = rUsu.claveUsuario.ljust(8, ' ')
     rUsu.tipoUsuario = str(rUsu.tipoUsuario)
     rUsu.tipoUsuario = rUsu.tipoUsuario.ljust(20, ' ')
-    rUsu.codUsuario = str(rUsu.codUsua)
+    rUsu.codUsuario = str(rUsu.codUsuario)
     
-
 def formatearLocales(rLoc):
     rLoc.nombreLocal = str(rLoc.nombreLocal)
     rLoc.nombreLocal = rLoc.nombreLocal.ljust(50, ' ') 
@@ -101,7 +100,7 @@ def buscaSec(mail):
             return pos
     return -1
 #------------------------------------------------------------------------------------------------------------------------------------------#
-def crearUsuarios():
+def crearUsuariosTipoCliente():
     global alUsuarios, afUsuarios
     print("-----------------------------------------")
     print("|              REGISTRACIÓN             |")
@@ -120,23 +119,44 @@ def crearUsuarios():
         while len(contra) != 8:
             contra = pwinput.pwinput(("Incorrecto! su contraseña debe tener 8 caracteres. "))
         regUsu.claveUsuario = contra
-        regUsu.codUsuario = obtenerUltCod(alUsuarios) + 1
+        regUsu.codUsuario = codUser() + 1
         regUsu.tipoUsuario = "cliente"
         formatearUsuario(regUsu)# es para que todos los registros tengan las mismas longitudes en todos los campos, por tanto todos tendran el mismo peso
         pickle.dump(regUsu, alUsuarios)
-        alUsuarios.flush()    
+        alUsuarios.flush()
+        print("Usuario tipo cliente creado exitosamente")# estaria bueno poner una validacion corte ingrese de nuevo su contraseña para confirmar
     else:
         print("El usuario ya existe.") 
              
-def obtenerUltCod(file):
-    file.seek(0)  # Me posiciono en el primer registro
-    aux = pickle.load(file)  # Lo traigo a memoria
-    tamReg = file.tell()  # Obtengo el peso en bytes del registro (todos pesan lo mismo)
+# def obtenerUltCod(file):
+#     file.seek(0)  # Me posiciono en el primer registro
+#     aux = pickle.load(file)  # Lo traigo a memoria
+#     tamReg = file.tell()  # Obtengo el peso en bytes del registro (todos pesan lo mismo)
 
-    file.seek(-tamReg, 2)  # Me posiciono en el final y me muevo hacia atrás un registro (tamreg)
-    aux = pickle.load(file)  # Traigo a memoria el último registro cargado
-    cod = aux.codUsuario  # Obtengo el código del último registro cargado
-    return int(cod)  # Lo devuelvo para luego ir aumentando uno en uno cada vez que se cree uno nuevo
+#     file.seek(-tamReg, 2)  # Me posiciono en el final y me muevo hacia atrás un registro (tamreg)
+#     aux = pickle.load(file)  # Traigo a memoria el último registro cargado
+#     cod = aux.codUsuario  # Obtengo el código del último registro cargado
+#     return int(cod)  # Lo devuelvo para luego ir aumentando uno en uno cada vez que se cree uno nuevo
+
+def codUser():
+    alUsuarios.seek(0) # me posiciono en el primer registro
+    aux = pickle.load(alUsuarios) # lo traigo a memoria
+    tamReg = alUsuarios.tell() # obtengo el peso en bytes del registro(todos pesan lo mismo)
+    
+    alUsuarios.seek(-tamReg, 2) # me posiciono en el final, y me muevo hacia atras un registro(tamreg)
+    aux = pickle.load(alUsuarios)# traigo a memoria el ultimo registro cargado
+    cod = aux.codUsuario # obtengo el codigo del ultimo registro cargado
+    return int(cod) # lo devuelvo para luego ir aumentando uno en uno cada vez que se cree uno nuevo
+
+def codLocal():
+    alLocales.seek(0) # me posiciono en el primer registro
+    aux = pickle.load(alLocales) # lo traigo a memoria
+    tamReg = alLocales.tell() # obtengo el peso en bytes del registro(todos pesan lo mismo)
+    
+    alLocales.seek(-tamReg, 2) # me posiciono en el final, y me muevo hacia atras un registro(tamreg)
+    aux = pickle.load(alLocales)# traigo a memoria el ultimo registro cargado
+    cod = aux.codUsuario # obtengo el codigo del ultimo registro cargado
+    return int(cod) # lo devuelvo para luego ir aumentando uno en uno cada vez que se cree uno nuevo
 
 #------------------------------------------------------------------------------------------------------------------------------------------#
 def ingresoUsuarios(): # recordar INACTIVOS
@@ -329,45 +349,47 @@ def busquedaDicotomica(a):
 
 def crearDuenios():
     os.system("cls")
-    '''Otra función del Administrador es crear cuentas de dueños de locales que se darán de alta en el archivo USUARIOS.DAT. 
-    Para ello deberá ingresar un mail (hasta 100 caracteres de longitud y que no exista otro usuario igual), clave (exactamente 
-    de 8 caracteres), y asignar al campo tipoUsuario el valor Dueño de local (ver el diseño del archivo USUARIOS.DAT). 
-    Tener en cuenta que seguramente al principio haya que crear la cuenta del dueño de un local, antes de crear efectivamente el
-    local (es decir, el administrador debe pasar por este punto 2 antes de ir al punto 1 del menú)'''
-    rlu = usuarios()
+
     print("Creación de cuenta para dueños")
+
     mail = str(input("Ingrese una dirección de correo electrónico <máx. 100 caracteres>: "))
     while len(mail)< 1 and len(mail) > 100:
         mail = input("Incorrecto! su correo electrónico debe tener hasta 100 caracteres. ")
-    pos = buscaSec(mail)
-    while pos != -1: 
-        mail = str(input("Ingrese una dirección de correo electrónico <máx. 100 caracteres>: "))
-        while len(mail)< 1 and len(mail) > 100:
-            mail = input("Incorrecto! su correo electrónico debe tener hasta 100 caracteres. ")
-        pos = buscaSec(mail)
-    os.system("cls")
-    print("Usuario: " + mail)
-    contra = pwinput.pwinput("Ingrese una contraseña de exactamente 8 caracteres: ")
-    while len(contra) != 8:
-        contra = pwinput.pwinput("Incorrecto! La contraseña debe tener un largo de exactamente 8 caracteres: ")
-    alUsuarios.seek(0,2)
-    rlu.nombreUsuario = mail
-    rlu.claveUsuario = contra
-    rlu.tipoUsuario = "dueño de local" #habria que ponerle un codUsuario consecutivo tmb?
-    formatearUsuario(rlu)
-    pickle.dump(rlu,alUsuarios)
-    alUsuarios.flush()
-    print("****************************")
-    print("Usuario registrado con exito")
-    print("****************************")
+
+    regUsu = usuarios()
+    if buscaSec(mail) == -1:
+        regUsu.nombreUsuario = mail
+        contra = pwinput.pwinput("Ingrese una contraseña. Debe tener exactamente 8 caracteres ")
+        while len(contra) != 8:
+            contra = pwinput.pwinput(("Incorrecto! su contraseña debe tener 8 caracteres. "))
+        regUsu.claveUsuario = contra
+        regUsu.codUsuario = codUser() + 1
+        regUsu.tipoUsuario = "duenioDeLocal"
+        formatearUsuario(regUsu)# es para que todos los registros tengan las mismas longitudes en todos los campos, por tanto todos tendran el mismo peso
+        pickle.dump(regUsu, alUsuarios)
+        alUsuarios.flush()
+        print("Usuario tipo duenio creado exitosamente")# estaria bueno poner una validacion corte ingrese de nuevo su contraseña para confirmar
+    else:
+        print("El usuario ya existe. Volviendo...") 
+
     os.system("pause")
- 
+#--------------------------------------------------------------------------------------------------------------------------------------------#
+def pantalladueño():
+    print("""
+    	-----MENU PRINCIPAL-----
+
+       1. Crear descuento 
+       2. Reporte de uso de descuentos 
+       3. Ver novedades 
+       0. Salir  """)
+
 #-----------------ADMINISTRADOR-----------------------------------------------------------------------------------------------------------#
 def administrador():
     opc = -1
     while opc != 0:
+        menuAdministrador()
         opc = input("Ingrese una opción [1-5]: ")
-        while validaRangoEnteros(opc, 1, 5):
+        while validaRangoEnteros(opc, 0, 5):
             opc = input(Fore.RED + "Incorrecto - Ingrese una opción [1-5]: " + Fore.RESET)
         opc = int(opc)
         if opc == 1:
@@ -402,14 +424,21 @@ def administrador():
 
 def buscaSecCod(a):
     global afUsuarios, alUsuarios
+
     t = os.path.getsize(afUsuarios)
     alUsuarios.seek(0)  
+    print(t, "tttttttttttttt")
     while alUsuarios.tell()<t:
         pos = alUsuarios.tell()
-        vrTemp = pickle.load(alUsuarios)
-        vrTempsinesp = vrTemp.codUsuario #Esto lo hago porque debido al formateo uno tiene espacios y el otro no, entonces para que la comparacion funcione, le saco los espacios
-        vrTempor = vrTempsinesp.strip()
-        if (vrTempor) == a:
+        vrTemp = pickle.load(alUsuarios)# traigo a memoria el registro del usuario
+
+        codigo = vrTemp.codUsuario #guardo en una variable el codigo del usuario del 1er registro
+
+        tipoUser = vrTemp.tipoUsuario #guardo de una variable el tipo de usuario del 1er registro
+        tipoUserSE = tipoUser.strip() # ahora sin espacios
+
+        print(codigo, a, "acaaaaaaaaaa")
+        if int(codigo) == int(a) and tipoUserSE == "duenioDeLocal": # si el codigo coincide con el ingresado y si ademas el codigo pertenece a un dueño de local, retorna la posicion
             return pos
     return -1
 
@@ -439,38 +468,38 @@ def creacionDeLocales():
                 ordenamiento()
                 busquedaDicotomica(nombreLocal)
 
-        codUsuario = str(input("Ingrese su codigo de usuario"))
+        codUsuario = str(input("Ingrese suuuu codigo de usuario: "))
+        
+        pos = buscaSecCod(codUsuario)
+        print(pos)
+        while pos != -1:#verificar mediante una busqueda si el codigo del usuario corresponde a un dueño de local
 
-        pos = buscaSec(codUsuario)
-        #verificar mediante una busqueda si el codigo del usuario corresponde a un dueño de local
+            ubiLocal = str(input("Ingrese la ubi del local <máx. 50 caracteres>. "))
 
-        while len(codUsuario)< 1 and len(codUsuario) > 50:
-            codUsuario = input("Incorrecto! su codigo de usuario no corresponde con un dueño de local ")
+            while len(ubiLocal)< 1 and len(ubiLocal) > 50:
+                ubiLocal = input("Incorrecto! su ubicacion debe tener hasta 50 caracteres. ")
 
-        ubiLocal = str(input("Ingrese la ubi del local <máx. 50 caracteres>. "))
+            rubroLocal = str(input("Ingrese el rubro del local <indumentaria, perfumeria o comida>:  "))
 
-        while len(ubiLocal)< 1 and len(ubiLocal) > 50:
-            ubiLocal = input("Incorrecto! su ubicacion debe tener hasta 50 caracteres. ")
+            while len(rubroLocal)< 1 and len(rubroLocal) > 50:
+                rubroLocal = input("Incorrecto! su correo electrónico debe tener hasta 50 caracteres:  ")
 
-        rubroLocal = str(input("Ingrese el rubro del local <indumentaria, perfumeria o comida>:  "))
+            regLoc = locales()
+            regLoc.nombreLocal = nombreLocal
+            regLoc.ubicLocal = ubiLocal
+            regLoc.rubroLocal = rubroLocal
+            regLoc.codUsuario = codUsuario
+            regLoc.codLocal = codLocal() + 1
+            regLoc.estado = "A"
+            formatearLocales(regLoc)
+            pickle.dump(regLoc, alLocales)
+            alLocales.flush()
 
-        while len(rubroLocal)< 1 and len(rubroLocal) > 50:
-            rubroLocal = input("Incorrecto! su correo electrónico debe tener hasta 50 caracteres:  ")
+            #puedo hacer un while mas grande y hacer un return con la lista de todos
+        #nombreLocal = str(input("Ingrese el nombre del local <máx. 50 caracteres>. "))
 
-        regLoc = locales()
-        regLoc.nombreLocal = nombreLocal
-        regLoc.ubicLocal = ubiLocal
-        regLoc.rubroLocal = rubroLocal
-        regLoc.codUsuario = codUsuario
-        regLoc.codLocal = obtenerUltCod(alLocales) + 1
-        formatearLocales(regLoc)
-        pickle.dump(regLoc, alLocales)
-        alLocales.flush()
+   # return 1 #faltaria el listado
 
-        #puedo hacer un while mas grande y hacer un return con la lista de todos
-        nombreLocal = str(input("Ingrese el nombre del local <máx. 50 caracteres>. "))
-
-    return 1 #faltaria el listado
 
 #---------------Programa principal---------------------------------------------------------------------------------------------------------#
 afUsuarios = "C:\\ayed\\usuarios.dat" 
@@ -478,12 +507,13 @@ afLocales = "C:\\ayed\\locales.dat"
 afUsoPromos = "C:\\ayed\\uso_promociones.dat"
 afPromociones = "C:\\ayed\\promociones.dat"
 
+
+
+
 if os.path.exists(afUsuarios):
     alUsuarios = open(afUsuarios,"r+b") #el archivo ya existe, el puntero va al inicio.
-    alLocales = open(afLocales,"r+b") #el archivo ya existe, el puntero va al inicio.
 else:
     alUsuarios = open(afUsuarios,"w+b") #el archivo no existe, lo crea.
-    alLocales = open(afLocales,"w+b") #el archivo no existe, lo crea.
     #precarga el primer usuario que debe aparecer una vez se inicie el archivo por primera vez
     rUsu = usuarios()
     rUsu.codUsuario = 1
@@ -494,6 +524,18 @@ else:
     pickle.dump(rUsu, alUsuarios)
     alUsuarios.flush()
 
+if os.path.exists(afLocales): #Inicializo el registro locales
+    alLocales = open (afLocales, "r+b")
+else:
+    alLocales = open (afLocales, "w+b")
+if os.path.exists(afUsoPromos): #Inicializo el registro uso_promociones
+    alUsoPromos = open (afUsoPromos, "r+b")
+else:
+    alUsoPromos = open (afUsoPromos, "w+b")
+if os.path.exists(afPromociones): #Inicializo el registro promociones
+    alPromociones = open (afPromociones, "r+b")
+else:
+    alPromociones= open (afPromociones, "w+b")
 
 opc = -1
 while opc != 3:
@@ -513,8 +555,14 @@ while opc != 3:
         elif tipoUseraSE == "dueñoDeLocal":
             menuDuenoDeLocal()
     elif opc == 2:
-        crearUsuarios()
+        crearUsuariosTipoCliente()
     elif opc == 3:
         print("\n\nGracias por visitarnos ...\n\n")
+
+
+
+
 alUsuarios.close()
 alLocales.close()
+alPromociones.close()
+alUsoPromos.close()
